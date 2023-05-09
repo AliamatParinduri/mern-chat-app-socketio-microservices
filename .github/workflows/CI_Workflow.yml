@@ -1,0 +1,45 @@
+name: Continous Integration
+
+on:
+  pull_request:
+    branches: ['master']
+
+jobs:
+  ci_verification:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Test User Service
+        working-directory: ./user
+        run: |
+          npm i
+          npm test
+
+      - name: Test Chat Service
+        working-directory: ./chat
+        run: |
+          npm i
+          npm test
+
+      - name: Test Message Service
+        working-directory: ./message
+        run: |
+          npm i
+          npm test
+
+      - name: Test Frontend Service
+        working-directory: ./frontend
+        run: |
+          npm i
+          npm test
+          npm run build --if-present

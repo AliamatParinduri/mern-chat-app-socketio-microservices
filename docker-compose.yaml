@@ -1,0 +1,55 @@
+version: '3.7'
+services:
+  chat-app-mongodb:
+    image: mongo
+    ports:
+      - '27017:27017'
+    container_name: chat-app-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: mongo
+    volumes:
+      - chat-app-volume:/data/db
+    networks:
+      - chat-app-network
+    restart: always
+
+  chat-app-backend:
+    build:
+      dockerfile: Dockerfile
+      context: ./backend
+    container_name: chat-app-backend
+    ports:
+      - '5000:5000'
+    volumes:
+      - .:/app
+      - /app/backend/node_modules
+    depends_on:
+      - chat-app-mongodb
+    networks:
+      - chat-app-network
+    restart: always
+    env_file:
+      - ./backend/.env
+
+  chat-app-frontend:
+    build:
+      dockerfile: Dockerfile
+      context: ./frontend
+    container_name: chat-app-frontend
+    ports:
+      - '3000:5173'
+    volumes:
+      - .:/app
+      - /app/frontend/node_modules
+    depends_on:
+      - chat-app-mongodb
+    networks:
+      - chat-app-network
+    restart: always
+
+volumes:
+  chat-app-volume:
+
+networks:
+  chat-app-network:
