@@ -1,9 +1,9 @@
 import Joi from 'joi'
-import { Document } from 'mongoose'
 
 import { LoginValidate } from './auth.dto'
 
-export interface UserDTO extends Document {
+export interface UserDTO {
+  _id?: string
   name: string
   email: string
   password: string

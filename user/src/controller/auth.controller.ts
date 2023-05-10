@@ -9,7 +9,7 @@ class AuthController {
     try {
       const body = req.body
 
-      validate(body, RegisterSchema)
+      // validate(body, RegisterSchema)
 
       const result = await authService.register(body as RegisterDTO)
 
@@ -29,7 +29,7 @@ class AuthController {
 
       const result = await authService.login(body as LoginDTO)
 
-      const token = generateToken({ _id: result._id, ...body }, { expiresIn: '1d' })
+      const token = generateToken({ _id: result.id, ...body }, { expiresIn: '1d' })
       if (!token) {
         throw new UnprocessableEntityError('failed to generate token')
       }

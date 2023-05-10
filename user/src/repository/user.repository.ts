@@ -1,13 +1,22 @@
 /* eslint-disable no-unreachable */
+import { Op } from 'sequelize'
+
 import { RegisterDTO, UserDTO } from '../dto'
-import { User } from '../models'
 import { InternalServerError, logger } from '../utils'
+import models from '../models'
 
 class UserRepository {
   getUsers = async (keyword: any, user: UserDTO) => {
     try {
-      return await User.find(keyword).find({ _id: { $ne: user._id } })
+      return await models.User.findAll({
+        where: {
+          ...keyword,
+          id: { [Op.ne]: user._id }
+        }
+      })
     } catch (err: any) {
+      console.log(err)
+
       logger.error('Error - get users ', err)
       throw new InternalServerError(err)
     }
@@ -15,21 +24,29 @@ class UserRepository {
 
   createUser = async (payload: RegisterDTO) => {
     try {
-      return await User.create({
+      return await models.User.create({
         name: payload.name,
         email: payload.email,
         password: payload.password,
         pic: payload.pic
       })
     } catch (err: any) {
-      logger.error('Error - get users ', err)
+      logger.error('Error - register users ', err)
       throw new InternalServerError(err)
     }
   }
 
   findOne = async (attr: object) => {
     try {
-      return await User.findOne(attr)
+      return await models.User.findOne({ where: attr })
+    } catch (err: any) {
+      throw new InternalServerError(err)
+    }
+  }
+
+  findById = async (userId: string) => {
+    try {
+      return await models.User.findOne({ where: { id: userId }, attributes: { exclude: ['password'] } })
     } catch (err: any) {
       throw new InternalServerError(err)
     }
