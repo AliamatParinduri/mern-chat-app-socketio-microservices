@@ -15,7 +15,7 @@ const ScrollableChat = ({ messages }: any) => {
           <div style={{ display: 'flex', alignItems: 'center' }} key={message['_id']}>
             {messages.length > 0 &&
               messages[0].chat.isGroupChat &&
-              (isSameSender(messages, message, i, user._id) || isLastMessage(messages, i, user._id)) && (
+              (isSameSender(messages, message, i, user.id) || isLastMessage(messages, i, user.id)) && (
                 <Tooltip label={message.sender.name} placement="bottom-start" hasArrow>
                   <Avatar
                     mt="7px"
@@ -30,11 +30,11 @@ const ScrollableChat = ({ messages }: any) => {
 
             <span
               style={{
-                background: `${message.sender._id === user._id ? '#BEE4F8' : '#B9F5D0'}`,
+                background: `${message.sender.id === user.id ? '#BEE4F8' : '#B9F5D0'}`,
                 borderRadius: '20px',
                 padding: '5px 15px',
                 maxWidth: '75%',
-                marginLeft: isSameSenderMargin(messages, message, i, user._id),
+                marginLeft: isSameSenderMargin(messages, message, i, user.id),
                 marginTop: isSameUser(messages, message, i) ? 3 : 10
               }}
             >

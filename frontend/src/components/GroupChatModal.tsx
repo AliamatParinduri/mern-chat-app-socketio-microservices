@@ -18,7 +18,7 @@ import {
 import { useState } from 'react'
 import { ChatState, chatContextType } from '../context/ChatProvider'
 import axios from 'axios'
-import { BaseURL } from '../config'
+import { BaseURLChat, BaseURLUser } from '../config'
 import { UserListItem, UserBadgeItem } from '.'
 
 const GroupChatModal = ({ children }: any) => {
@@ -49,7 +49,7 @@ const GroupChatModal = ({ children }: any) => {
         }
       }
 
-      const { data } = await axios.get(`${BaseURL}/v1/users?search=${search}`, config)
+      const { data } = await axios.get(`${BaseURLUser}/v1/users?search=${search}`, config)
 
       setLoading(false)
       setSearchResult(data.data)
@@ -85,16 +85,16 @@ const GroupChatModal = ({ children }: any) => {
       }
 
       const { data } = await axios.post(
-        `${BaseURL}/v1/chat/group`,
+        `${BaseURLChat}/v1/chat/group`,
         {
           name: groupChatName,
-          users: JSON.stringify(selectedUsers.map((user: { _id: string }) => user._id))
+          users: JSON.stringify(selectedUsers.map((user: { id: string }) => user.id))
         },
         config
       )
 
       data.data.groupAdmin = [user]
-      data.data.users = [user, ...selectedUsers.map((user: { _id: string }) => user)]
+      data.data.users = [user, ...selectedUsers.map((user: { id: string }) => user)]
 
       setChats([data.data, ...chats])
       onClose()
@@ -137,7 +137,7 @@ const GroupChatModal = ({ children }: any) => {
   }
 
   const handleDelete = (delUser: any) => {
-    setSelectedUsers(selectedUsers.filter((user: { _id: string }) => user._id !== delUser._id))
+    setSelectedUsers(selectedUsers.filter((user: { id: string }) => user.id !== delUser.id))
   }
 
   return (
@@ -160,8 +160,8 @@ const GroupChatModal = ({ children }: any) => {
             </FormControl>
 
             <Box w="100%" display="flex" flexWrap="wrap">
-              {selectedUsers.map((user: { _id: string }) => (
-                <UserBadgeItem key={user._id} user={user} handleFunction={() => handleDelete(user)} />
+              {selectedUsers.map((user: { id: string }) => (
+                <UserBadgeItem key={user.id} user={user} handleFunction={() => handleDelete(user)} />
               ))}
             </Box>
 
@@ -170,8 +170,8 @@ const GroupChatModal = ({ children }: any) => {
             ) : (
               searchResult
                 .slice(0, 4)
-                .map((user: { _id: string }) => (
-                  <UserListItem key={user._id} user={user} handleFunction={() => handleGroup(user as never)} />
+                .map((user: { id: string }) => (
+                  <UserListItem key={user.id} user={user} handleFunction={() => handleGroup(user as never)} />
                 ))
             )}
           </ModalBody>

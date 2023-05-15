@@ -1,7 +1,6 @@
 export { default as ChatLoading } from './ChatLoading'
 export { default as ProfileModal } from './ProfileModal'
 export { default as GroupChatModal } from './GroupChatModal'
-export { default as SingleChat } from './SingleChat'
 export { default as ScrollableChat } from './ScrollableChat'
 export { default as UpdateGroupChatModal } from './UpdateGroupChatModal'
 export { default as UserBadgeItem } from './UserBadgeItem'

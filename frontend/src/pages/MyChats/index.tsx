@@ -7,7 +7,7 @@ import axios from 'axios'
 import { FaPlus } from 'react-icons/fa'
 import { getSender, getSenderPicture } from '../../config/ChatLogics'
 import { ChatLoading, GroupChatModal } from '../../components'
-import { BaseURL } from '../../config'
+import { BaseURLChat } from '../../config'
 
 const MyChats = ({ fetchAgain }: any) => {
   const [loggedUser, setLoggedUser] = useState()
@@ -21,7 +21,7 @@ const MyChats = ({ fetchAgain }: any) => {
         }
       }
 
-      const { data } = await axios.get(`${BaseURL}/v1/chat`, config)
+      const { data } = await axios.get(`${BaseURLChat}/v1/chat`, config)
 
       setChats(data.data)
     } catch (err: any) {
@@ -106,6 +106,7 @@ const MyChats = ({ fetchAgain }: any) => {
                     </Text>
                     {chat.latestMessage && (
                       <Text fontSize="xs">
+                        {/* disini harus populate latestmessage nya juga */}
                         {!chat.isGroupChat ? <b>{chat.latestMessage.sender.name} : </b> : null}
                         {chat.latestMessage.content.length > 50
                           ? chat.latestMessage.content.substring(0, 51) + '...'

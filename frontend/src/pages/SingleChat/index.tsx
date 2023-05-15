@@ -2,9 +2,9 @@
 import React, { useEffect, useState } from 'react'
 import { Box, FormControl, IconButton, Input, Spinner, Text, useToast } from '@chakra-ui/react'
 import { FaArrowLeft } from 'react-icons/fa'
-import { ChatState, chatContextType } from '../context/ChatProvider'
-import { ProfileModal, ScrollableChat, UpdateGroupChatModal } from '.'
-import { BaseURL, ENDPOINT, getSender, getSenderFull } from '../config'
+import { ChatState, chatContextType } from '../../context/ChatProvider'
+import { ProfileModal, ScrollableChat, UpdateGroupChatModal } from '../../components'
+import { BaseURLMessage, ENDPOINT, getSender, getSenderFull } from '../../config'
 import axios from 'axios'
 import io from 'socket.io-client'
 
@@ -19,7 +19,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }: any) => {
   const [isTyping, setIsTyping] = useState(false)
 
   const toast = useToast()
-  const { user, selectedChat, setSelectedChat }: chatContextType = ChatState()
+  const { user, selectedChat, setSelectedChat, notifications, setNotifications }: chatContextType = ChatState()
 
   const fetchMessages = async () => {
     if (!selectedChat) return
@@ -31,7 +31,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }: any) => {
           Authorization: `Bearer ${user.token}`
         }
       }
-      const { data } = await axios.get(`${BaseURL}/v1/message/${selectedChat._id}`, config)
+      const { data } = await axios.get(`${BaseURLMessage}/v1/message/${selectedChat._id}`, config)
 
       setMessages(data.data)
       setLoading(false)
@@ -67,7 +67,10 @@ const SingleChat = ({ fetchAgain, setFetchAgain }: any) => {
   useEffect(() => {
     socket.on('message received', (newMessageReceived: any) => {
       if (!selectedChatCompare || selectedChatCompare._id !== newMessageReceived.chat._id) {
-        // disini kasih notifikasi
+        if (!notifications.includes(newMessageReceived)) {
+          setNotifications([newMessageReceived, ...notifications])
+          setFetchAgain(!fetchAgain)
+        }
       } else {
         const newMesages: any = [...messages, newMessageReceived]
         setMessages(newMesages)
@@ -87,7 +90,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }: any) => {
         }
 
         const { data } = await axios.post(
-          `${BaseURL}/v1/message`,
+          `${BaseURLMessage}/v1/message`,
           {
             content: newMessage,
             chatId: selectedChat._id

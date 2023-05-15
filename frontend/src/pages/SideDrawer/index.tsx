@@ -26,7 +26,7 @@ import axios from 'axios'
 import { FaBell, FaChevronDown } from 'react-icons/fa'
 
 import { ProfileModal, ChatLoading, UserListItem } from '../../components'
-import { BaseURL } from '../../config'
+import { BaseURLChat, BaseURLUser, getSender } from '../../config'
 import { ChatState, chatContextType } from '../../context/ChatProvider'
 
 const SideDrawer = () => {
@@ -35,7 +35,7 @@ const SideDrawer = () => {
   const [loading, setLoading] = useState(false)
   const [loadingChat, setLoadingChat] = useState(false)
 
-  const { user, chats, setChats, setSelectedChat }: chatContextType = ChatState()
+  const { user, chats, setChats, setSelectedChat, notifications, setNotifications }: chatContextType = ChatState()
   const navigate = useNavigate()
   const { isOpen, onOpen, onClose } = useDisclosure()
   const toast = useToast()
@@ -66,7 +66,7 @@ const SideDrawer = () => {
         }
       }
 
-      const { data } = await axios.get(`${BaseURL}/v1/users?search=${search}`, config)
+      const { data } = await axios.get(`${BaseURLUser}/v1/users?search=${search}`, config)
       setLoading(false)
       setSearchResult(data.data)
     } catch (err) {
@@ -93,7 +93,7 @@ const SideDrawer = () => {
         }
       }
 
-      const { data } = await axios.post(`${BaseURL}/v1/chat`, { userId }, config)
+      const { data } = await axios.post(`${BaseURLChat}/v1/chat`, { userId }, config)
 
       if (!chats.find((c: any) => c._id === data._id)) setChats([data.data, ...chats])
       setSelectedChat(data!.data)
@@ -137,9 +137,45 @@ const SideDrawer = () => {
         </Text>
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <Menu>
-            <MenuButton p="1">
+            <MenuButton p="1" position="relative">
+              {notifications.length > 0 ? (
+                <Box
+                  w="20px"
+                  h="20px"
+                  background="#da3131"
+                  borderRadius="50%"
+                  position="absolute"
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                  right="1"
+                  fontSize="13"
+                  top="0"
+                  color="rgba(255,255,255,0.8)"
+                  padding="2"
+                >
+                  {notifications.length}
+                </Box>
+              ) : null}
+
               <FaBell fontSize="20px" style={{ margin: '7px' }} />
             </MenuButton>
+            <MenuList pl="2">
+              {!notifications.length && 'No New Messages'}
+              {notifications.map((notif: any) => (
+                <MenuItem
+                  key={notif._id}
+                  onClick={() => {
+                    setSelectedChat(notif.chat)
+                    setNotifications(notifications.filter((n: any) => n !== notif))
+                  }}
+                >
+                  {notif.chat.isGroupChat
+                    ? `New Message in ${notif.chat.chatName}`
+                    : `New Messsage from ${getSender(user, notif.chat.users)}`}
+                </MenuItem>
+              ))}
+            </MenuList>
           </Menu>
           <Menu>
             <MenuButton as={Button} rightIcon={<FaChevronDown />}>
@@ -174,8 +210,8 @@ const SideDrawer = () => {
             {loading ? (
               <ChatLoading />
             ) : (
-              searchResult.map((user: { _id: string }) => (
-                <UserListItem key={user._id} user={user} handleFunction={() => accessChat(user._id)} />
+              searchResult.map((user: { id: string }) => (
+                <UserListItem key={user.id} user={user} handleFunction={() => accessChat(user.id)} />
               ))
             )}
             {loadingChat && <Spinner ml="auto" display="flex" />}
