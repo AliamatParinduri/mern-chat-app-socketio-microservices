@@ -23,7 +23,7 @@ export interface AddOrRemoveGroupChatDTO extends Document {
 }
 
 export const AccessChatSchema = Joi.object({
-  userId: Joi.string().alphanum().required()
+  userId: Joi.string().uuid().required()
 })
 
 export const CreateGroupChatSchema = Joi.object({
@@ -38,5 +38,5 @@ export const RenameGroupChatSchema = Joi.object({
 
 export const AddOrRemoveGroupChatSchema = Joi.object({
   chatId: Joi.string().alphanum().required(),
-  userId: Joi.string().alphanum().required()
+  userId: Joi.string().uuid().required()
 })

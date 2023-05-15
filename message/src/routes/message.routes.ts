@@ -1,10 +1,11 @@
-import { getMessages, sendMessage } from '../controller'
+import { getLastestMessageById, getMessages, sendMessage } from '../controller'
 import { payloadMustInJSON, requireLogin } from '../middlewares'
 import { BaseRoutes } from './base.route'
 
 class MessageRoutes extends BaseRoutes {
   routes() {
     this.router.post('/', requireLogin, payloadMustInJSON, sendMessage)
+    this.router.get('/:id/latest-message', requireLogin, getLastestMessageById)
     this.router.get('/:chatId', requireLogin, getMessages)
   }
 }

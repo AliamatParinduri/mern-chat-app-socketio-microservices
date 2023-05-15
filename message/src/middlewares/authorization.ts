@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express'
 
-import { UnauthorizedError, logger } from '../utils'
+import { UnauthorizedError, logger, verifyToken } from '../utils'
 
 export const requireLogin = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -21,13 +21,14 @@ export const requireLogin = async (req: Request, res: Response, next: NextFuncti
       throw new UnauthorizedError('unAuthorized!')
     }
 
-    // const user = verifyToken(token)
-    // if (!user) {
-    //   logger.error('ERR = Auth - user not found')
-    //   throw new UnauthorizedError('user not found!')
-    // }
+    const user = verifyToken(token)
+    if (!user) {
+      logger.error('ERR = Auth - user not found')
+      throw new UnauthorizedError('user not found!')
+    }
 
-    // res.locals.user = user
+    res.locals.user = user
+    res.locals.userToken = token
     next()
   } catch (err) {
     next(err)
