@@ -7,8 +7,9 @@ import { chatService } from '../services'
 class ChatController {
   getChats = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const token = res.locals.userToken
       const user = res.locals.user
-      const result = await chatService.getChats(user)
+      const result = await chatService.getChats(user, token)
 
       const message = 'Success get chat data'
       logger.info(message)
@@ -18,8 +19,23 @@ class ChatController {
     }
   }
 
+  getChatById = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const id = req.params.id
+
+      const result = await chatService.getChatById(id)
+
+      const message = 'Success get chat data by id'
+      logger.info(message)
+      return res.status(200).json({ message, data: result })
+    } catch (err: any) {
+      next(err)
+    }
+  }
+
   accessChat = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const token = res.locals.userToken
       const user = res.locals.user
       const body = req.body
 
@@ -29,7 +45,7 @@ class ChatController {
         throw new UnprocessableEntityError('can not chat access to own user')
       }
 
-      const result = await chatService.accessChat(user, body.userId)
+      const result = await chatService.accessChat(user, body.userId, token)
 
       const message = 'Success create new chat'
       logger.info(message)
@@ -51,9 +67,9 @@ class ChatController {
       validate(body, CreateGroupChatSchema)
 
       const users = JSON.parse(body.users)
-      users.push(user)
+      users.push(user._id)
 
-      const result = await chatService.createGroupChat(user, users, body.name)
+      const result = await chatService.createGroupChat(user._id, users, body.name)
 
       const message = 'Success create group chat'
       logger.info(message)
@@ -63,13 +79,31 @@ class ChatController {
     }
   }
 
+  updateLastestMessage = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const id = req.params.id
+      const body = req.body
+
+      // validate(body, CreateGroupChatSchema)
+
+      const result = await chatService.updateLastestMessage(id, body.messageId)
+
+      const message = 'Success update last message in chat'
+      logger.info(message)
+      return res.status(200).json({ message, data: result })
+    } catch (err: any) {
+      next(err)
+    }
+  }
+
   renameGroup = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const token = res.locals.userToken
       const body = req.body
 
       validate(body, RenameGroupChatSchema)
 
-      const result = await chatService.renameGroupChat(body)
+      const result = await chatService.renameGroupChat(body, token)
 
       const message = 'Success rename group chat'
       logger.info(message)
@@ -81,11 +115,12 @@ class ChatController {
 
   addToGroup = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const token = res.locals.userToken
       const body = req.body
 
       validate(body, AddOrRemoveGroupChatSchema)
 
-      const result = await chatService.addToGroupChat(body)
+      const result = await chatService.addToGroupChat(body, token)
 
       const message = 'Success add user to group chat'
       logger.info(message)
@@ -97,11 +132,12 @@ class ChatController {
 
   removeFromGroup = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const token = res.locals.userToken
       const body = req.body
 
       validate(body, AddOrRemoveGroupChatSchema)
 
-      const result = await chatService.removeFromGroupChat(body)
+      const result = await chatService.removeFromGroupChat(body, token)
 
       const message = 'Success remove user from group chat'
       logger.info(message)
@@ -112,4 +148,13 @@ class ChatController {
   }
 }
 
-export const { getChats, accessChat, createGroupChat, renameGroup, addToGroup, removeFromGroup } = new ChatController()
+export const {
+  getChats,
+  getChatById,
+  accessChat,
+  createGroupChat,
+  updateLastestMessage,
+  renameGroup,
+  addToGroup,
+  removeFromGroup
+} = new ChatController()

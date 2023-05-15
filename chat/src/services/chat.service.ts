@@ -3,16 +3,20 @@ import { AddOrRemoveGroupChatDTO, RenameGroupChatDTO, UserDTO } from '../dto'
 import { UnprocessableEntityError } from '../utils'
 
 class ChatService {
-  getChats = async (user: UserDTO) => {
-    return await chatRepository.getChats(user)
+  getChats = async (user: UserDTO, token: string) => {
+    return await chatRepository.getChats(user, token)
   }
 
-  accessChat = async (user: UserDTO, userId: string) => {
-    return await chatRepository.accessChat(user, userId)
+  getChatById = async (id: string) => {
+    return await chatRepository.getChatById(id)
   }
 
-  createGroupChat = async (user: UserDTO, users: [UserDTO], name: string) => {
-    const createGroupChat = await chatRepository.createGroupChat(user, users, name)
+  accessChat = async (user: UserDTO, userId: string, token: string) => {
+    return await chatRepository.accessChat(user, userId, token)
+  }
+
+  createGroupChat = async (userId: string, users: [string], name: string) => {
+    const createGroupChat = await chatRepository.createGroupChat(userId, users, name)
     if (!createGroupChat) {
       throw new UnprocessableEntityError('Group chat failed to created')
     }
@@ -24,16 +28,21 @@ class ChatService {
     return findGroupChat
   }
 
-  renameGroupChat = async (body: RenameGroupChatDTO) => {
-    return await chatRepository.renameGroupChat(body)
+  updateLastestMessage = async (id: string, messageId: string) => {
+    const chat = await chatRepository.getChatById(id)
+    return await chatRepository.updateLastestMessage(chat, messageId)
   }
 
-  addToGroupChat = async (body: AddOrRemoveGroupChatDTO) => {
-    return await chatRepository.addToGroupChat(body)
+  renameGroupChat = async (body: RenameGroupChatDTO, token: string) => {
+    return await chatRepository.renameGroupChat(body, token)
   }
 
-  removeFromGroupChat = async (body: AddOrRemoveGroupChatDTO) => {
-    return await chatRepository.removeFromGroupChat(body)
+  addToGroupChat = async (body: AddOrRemoveGroupChatDTO, token: string) => {
+    return await chatRepository.addToGroupChat(body, token)
+  }
+
+  removeFromGroupChat = async (body: AddOrRemoveGroupChatDTO, token: string) => {
+    return await chatRepository.removeFromGroupChat(body, token)
   }
 }
 
