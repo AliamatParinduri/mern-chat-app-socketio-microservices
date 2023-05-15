@@ -28,6 +28,7 @@ export const requireLogin = async (req: Request, res: Response, next: NextFuncti
     }
 
     res.locals.user = user
+    res.locals.userToken = token
     next()
   } catch (err) {
     next(err)

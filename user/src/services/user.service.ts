@@ -21,11 +21,15 @@ class UserService {
     return result
   }
 
-  detailsUsers = async (id: string, userId: string) => {
-    const user1 = await userRepository.findById(id)
-    const user2 = await userRepository.findById(userId)
+  detailsUsers = async (users: []) => {
+    const data: any[] = []
 
-    return [user1, user2]
+    for (const user of users) {
+      const userDetail = await userRepository.findById(user)
+      data.push(userDetail.dataValues)
+    }
+
+    return data
   }
 }
 

@@ -19,10 +19,9 @@ class UserController {
 
   detailsUsers = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const user = res.locals.user
-      const userId = req.params.userId
+      const users = req.params.users
 
-      const result = await userService.detailsUsers(user._id, userId)
+      const result = await userService.detailsUsers(JSON.parse(users))
 
       logger.info('Success get details user data')
       return res.status(200).json(result)

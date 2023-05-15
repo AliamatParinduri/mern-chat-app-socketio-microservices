@@ -5,7 +5,7 @@ import { BaseRoutes } from './base.route'
 class UserRoutes extends BaseRoutes {
   routes() {
     this.router.get('/', requireLogin, getUsers)
-    this.router.get('/:userId/detail-with-userlogin', requireLogin, detailsUsers)
+    this.router.get('/:users/detail-with-userlogin', requireLogin, detailsUsers)
   }
 }
 

@@ -15,8 +15,6 @@ class UserRepository {
         }
       })
     } catch (err: any) {
-      console.log(err)
-
       logger.error('Error - get users ', err)
       throw new InternalServerError(err)
     }
