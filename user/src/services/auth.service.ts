@@ -1,14 +1,16 @@
-import { UnprocessableEntityError, comparePassword } from '../utils'
+import { UnprocessableEntityError, comparePassword, generatePassword } from '../utils'
 import { RegisterDTO, LoginDTO } from '../dto'
 import { userRepository } from '../repository'
 
 class AuthService {
   register = async (payload: RegisterDTO) => {
     const userExists = await userRepository.findOne({ email: payload.email })
+
     if (userExists) {
       throw new UnprocessableEntityError('User already exists')
     }
 
+    payload.password = await generatePassword(payload.password)
     return await userRepository.createUser(payload)
   }
 

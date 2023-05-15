@@ -1,4 +1,5 @@
 import { Request } from 'express'
+import { Op } from 'sequelize'
 
 import { userRepository } from '../repository'
 import { UserDTO } from '../dto'
@@ -8,10 +9,7 @@ class UserService {
   getUsers = async (req: Request, user: UserDTO) => {
     const keyword = req.query.search
       ? {
-          $or: [
-            { name: { $regex: req.query.search, $options: 'i' } },
-            { email: { $regex: req.query.search, $options: 'i' } }
-          ]
+          [Op.or]: [{ name: { [Op.iRegexp]: req.query.search } }, { email: { [Op.iRegexp]: req.query.search } }]
         }
       : {}
 
@@ -21,6 +19,17 @@ class UserService {
       throw new NotFoundError('Users Not Found')
     }
     return result
+  }
+
+  detailsUsers = async (users: []) => {
+    const data: any[] = []
+
+    for (const user of users) {
+      const userDetail = await userRepository.findById(user)
+      data.push(userDetail.dataValues)
+    }
+
+    return data
   }
 }
 

@@ -16,6 +16,19 @@ class UserController {
       next(err)
     }
   }
+
+  detailsUsers = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const users = req.params.users
+
+      const result = await userService.detailsUsers(JSON.parse(users))
+
+      logger.info('Success get details user data')
+      return res.status(200).json(result)
+    } catch (err: any) {
+      next(err)
+    }
+  }
 }
 
-export const { getUsers } = new UserController()
+export const { getUsers, detailsUsers } = new UserController()

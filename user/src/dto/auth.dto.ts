@@ -1,8 +1,7 @@
 /* eslint-disable prefer-regex-literals */
 import Joi from 'joi'
-import { Document } from 'mongoose'
 
-export interface LoginDTO extends Document {
+export interface LoginDTO {
   email: string
   password: string
 }

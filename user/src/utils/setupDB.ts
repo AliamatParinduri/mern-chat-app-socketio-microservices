@@ -1,14 +1,13 @@
-import mongoose from 'mongoose'
-
-import { DBUri } from '../../config'
-import { logger } from '.'
+import db from '../models'
+import { logger } from './logger'
 
 export const connectDB = async () => {
   try {
-    await mongoose.connect(DBUri)
-    logger.info('Success - connect to database mongoose')
+    db.sequelize.sync()
+    logger.info('Success - connect to database postgres')
+    console.log('DB Success Migrated')
   } catch (err) {
-    logger.error('Error - connect to database mongoose ', err)
+    logger.error('Error - connect to database postgres ', err)
     process.exit()
   }
 }

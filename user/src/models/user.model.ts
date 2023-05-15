@@ -1,26 +1,61 @@
-import { Schema, model } from 'mongoose'
-import bcrypt from 'bcrypt'
+'use strict'
+
+import { Model, UUIDV4 } from 'sequelize'
 
 import { DefaultPicture } from '../../config'
-import { UserDTO } from '../dto'
 
-const UserSchema = new Schema(
-  {
-    name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    pic: { type: String, default: DefaultPicture, required: true }
-  },
-  { timestamps: true }
-)
+interface UserAttributes {
+  id: string
+  name: string
+  email: string
+  password: string
+  pic: string
+}
 
-UserSchema.pre('save', async function (next) {
-  if (!this.isModified) {
-    next()
+module.exports = (sequelize: any, DataTypes: any) => {
+  class User extends Model<UserAttributes> implements UserAttributes {
+    /**
+     * Helper method for defining associations.
+     * This method is not a part of Sequelize lifecycle.
+     * The `models/index` file will call this method automatically.
+     */
+    id!: string
+    name!: string
+    email!: string
+    password!: string
+    pic!: string
   }
-
-  const salt = await bcrypt.genSalt(12)
-  this.password = await bcrypt.hash(this.password, salt)
-})
-
-export const User = model<UserDTO>('User', UserSchema)
+  User.init(
+    {
+      id: {
+        type: DataTypes.UUID,
+        defaultValue: UUIDV4,
+        allowNull: false,
+        primaryKey: true
+      },
+      name: {
+        type: DataTypes.STRING,
+        allowNull: false
+      },
+      email: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true
+      },
+      password: {
+        type: DataTypes.STRING,
+        allowNull: false
+      },
+      pic: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: DefaultPicture
+      }
+    },
+    {
+      sequelize,
+      modelName: 'User'
+    }
+  )
+  return User
+}
