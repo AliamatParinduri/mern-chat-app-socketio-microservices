@@ -4,15 +4,9 @@ import { MessageDTO } from '../dto'
 
 const MessageSchema = new Schema(
   {
-    sender: {
-      type: Schema.Types.ObjectId,
-      ref: 'User'
-    },
+    sender: { type: Object, trim: true },
     content: { type: String },
-    chat: {
-      type: Schema.Types.ObjectId,
-      ref: 'Chat'
-    }
+    chat: { type: Object, trim: true }
   },
   { timestamps: true }
 )
