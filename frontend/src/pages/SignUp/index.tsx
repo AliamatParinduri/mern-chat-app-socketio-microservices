@@ -13,7 +13,7 @@ import {
 } from '@chakra-ui/react'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
-import { BaseURL, Cloudinary } from '../../config'
+import { BaseURLUser, Cloudinary } from '../../config'
 
 const SignUp = () => {
   const [name, setName] = useState('')
@@ -110,7 +110,7 @@ const SignUp = () => {
         }
       }
 
-      const { data } = await axios.post(`${BaseURL}/v1/auth/register`, { name, email, password, pic }, config)
+      const { data } = await axios.post(`${BaseURLUser}/v1/auth/register`, { name, email, password, pic }, config)
       toast({
         title: 'Registration Successfully!',
         status: 'success',

@@ -11,7 +11,7 @@ import {
 } from '@chakra-ui/react'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
-import { BaseURL } from '../../config'
+import { BaseURLUser } from '../../config'
 
 const Login = () => {
   const [email, setEmail] = useState('')
@@ -44,7 +44,7 @@ const Login = () => {
         }
       }
 
-      const { data } = await axios.post(`${BaseURL}/v1/auth/login`, { email, password }, config)
+      const { data } = await axios.post(`${BaseURLUser}/v1/auth/login`, { email, password }, config)
       toast({
         title: 'Login Successful!',
         status: 'success',

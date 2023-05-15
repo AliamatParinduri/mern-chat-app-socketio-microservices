@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import { Box } from '@chakra-ui/react'
 
-import { SingleChat } from '../../components/'
+import { SingleChat } from '..'
 import { ChatState } from '../../context/ChatProvider'
 
 const ChatBox = ({ fetchAgain, setFetchAgain }: any) => {

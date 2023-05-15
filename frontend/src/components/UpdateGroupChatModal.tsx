@@ -20,7 +20,7 @@ import {
 import { FaEye } from 'react-icons/fa'
 import axios from 'axios'
 import { UserBadgeItem, UserListItem } from '.'
-import { BaseURL } from '../config'
+import { BaseURLChat, BaseURLUser } from '../config'
 import { ChatState, chatContextType } from '../context/ChatProvider'
 
 const UpdateGroupChatModal = ({ fetchAgain, setFetchAgain, fetchMessages }: any) => {
@@ -35,7 +35,7 @@ const UpdateGroupChatModal = ({ fetchAgain, setFetchAgain, fetchMessages }: any)
   const toast = useToast()
 
   const handleAddUser = async (user1: any) => {
-    if (selectedChat.users.find((user: any) => user._id === user1._id)) {
+    if (selectedChat.users.find((user: any) => user.id === user1.id)) {
       return toast({
         title: 'User Already in group!',
         status: 'error',
@@ -45,7 +45,7 @@ const UpdateGroupChatModal = ({ fetchAgain, setFetchAgain, fetchMessages }: any)
       })
     }
 
-    if (selectedChat.groupAdmin._id === user._id) {
+    if (selectedChat.groupAdmin.id === user.id) {
       return toast({
         title: 'Only admins can add someone!',
         status: 'error',
@@ -64,10 +64,10 @@ const UpdateGroupChatModal = ({ fetchAgain, setFetchAgain, fetchMessages }: any)
       }
 
       const { data } = await axios.put(
-        `${BaseURL}/v1/chat/add/group`,
+        `${BaseURLChat}/v1/chat/add/group`,
         {
           chatId: selectedChat._id,
-          userId: user1._id
+          userId: user1.id
         },
         config
       )
@@ -95,7 +95,7 @@ const UpdateGroupChatModal = ({ fetchAgain, setFetchAgain, fetchMessages }: any)
   }
 
   const handleRemove = async (user1: any) => {
-    if (selectedChat.groupAdmin[0]._id !== user._id && user1._id !== user._id) {
+    if (selectedChat.groupAdmin[0].id !== user.id && user1.id !== user.id) {
       return toast({
         title: 'Only admins can add someone!',
         status: 'error',
@@ -114,15 +114,15 @@ const UpdateGroupChatModal = ({ fetchAgain, setFetchAgain, fetchMessages }: any)
       }
 
       const { data } = await axios.put(
-        `${BaseURL}/v1/chat/remove/group`,
+        `${BaseURLChat}/v1/chat/remove/group`,
         {
           chatId: selectedChat._id,
-          userId: user1._id
+          userId: user1.id
         },
         config
       )
 
-      user1._id === user._id ? setSelectedChat() : setSelectedChat(data.data)
+      user1.id === user.id ? setSelectedChat() : setSelectedChat(data.data)
       setFetchAgain(!fetchAgain)
       fetchMessages()
       setLoading(false)
@@ -150,7 +150,7 @@ const UpdateGroupChatModal = ({ fetchAgain, setFetchAgain, fetchMessages }: any)
       }
 
       const { data } = await axios.put(
-        `${BaseURL}/v1/chat/rename/group`,
+        `${BaseURLChat}/v1/chat/rename/group`,
         {
           chatId: selectedChat._id,
           chatName: groupChatName
@@ -196,7 +196,7 @@ const UpdateGroupChatModal = ({ fetchAgain, setFetchAgain, fetchMessages }: any)
           Authorization: `Bearer ${user.token}`
         }
       }
-      const { data } = await axios.get(`${BaseURL}/v1/users?search=${search}`, config)
+      const { data } = await axios.get(`${BaseURLUser}/v1/users?search=${search}`, config)
       setLoading(false)
       setSearchResult(data.data)
     } catch (error) {
@@ -226,7 +226,7 @@ const UpdateGroupChatModal = ({ fetchAgain, setFetchAgain, fetchMessages }: any)
           <ModalBody>
             <Box w="100%" display="flex" flexWrap="wrap" pb="3">
               {selectedChat.users.map((user: any) => (
-                <UserBadgeItem key={user._id} user={user} handleFunction={() => handleRemove(user)} />
+                <UserBadgeItem key={user.id} user={user} handleFunction={() => handleRemove(user)} />
               ))}
             </Box>
             <FormControl display="flex">
@@ -246,8 +246,8 @@ const UpdateGroupChatModal = ({ fetchAgain, setFetchAgain, fetchMessages }: any)
             {loading ? (
               <Spinner size="lg" />
             ) : (
-              searchResult.map((user: { _id: string }) => (
-                <UserListItem key={user._id} user={user} handleFunction={() => handleAddUser(user)} />
+              searchResult.map((user: { id: string }) => (
+                <UserListItem key={user.id} user={user} handleFunction={() => handleAddUser(user)} />
               ))
             )}
           </ModalBody>
