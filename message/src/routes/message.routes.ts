@@ -1,12 +1,16 @@
-import { getLastestMessageById, getMessages, sendMessage } from '../controller'
+import MessageController from '../controller/message.controller'
+import { createChannel } from '../utils'
 import { payloadMustInJSON, requireLogin } from '../middlewares'
 import { BaseRoutes } from './base.route'
 
 class MessageRoutes extends BaseRoutes {
-  routes() {
-    this.router.post('/', requireLogin, payloadMustInJSON, sendMessage)
-    this.router.get('/:id/latest-message', requireLogin, getLastestMessageById)
-    this.router.get('/:chatId', requireLogin, getMessages)
+  async routes() {
+    const channel = await createChannel()
+
+    const c = new MessageController(channel)
+
+    this.router.post('/', requireLogin, payloadMustInJSON, c.sendMessage)
+    this.router.get('/:chatId', requireLogin, c.getMessages)
   }
 }
 

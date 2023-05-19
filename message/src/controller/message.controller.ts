@@ -1,13 +1,20 @@
 import { NextFunction, Request, Response } from 'express'
 
-import { logger, validate } from '../utils'
+import { RPCObserver, logger, validate } from '../utils'
 import { sendMessageDTO, sendMessageSchema } from '../dto'
-import { messageService } from '../services'
+import MessageService from '../services/message.service'
 
 class MessageController {
+  channel
+  service = new MessageService()
+
+  constructor(channel: any) {
+    this.channel = channel
+    RPCObserver(channel, this.service)
+  }
+
   sendMessage = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const token = res.locals.userToken
       const body = req.body
 
       validate(body, sendMessageSchema)
@@ -18,7 +25,7 @@ class MessageController {
         chat: body.chatId
       }
 
-      const result = await messageService.sendMessage(newMessage as sendMessageDTO, token)
+      const result = await this.service.sendMessage(this.channel, newMessage as sendMessageDTO)
 
       const message = 'Success send message'
       logger.info(message)
@@ -28,24 +35,9 @@ class MessageController {
     }
   }
 
-  getLastestMessageById = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const id = req.params.id
-
-      const result = await messageService.getLastestMessageById(id)
-
-      const message = 'Success get chat data by id'
-      logger.info(message)
-      return res.status(200).json({ message, data: result })
-    } catch (err: any) {
-      next(err)
-    }
-  }
-
   getMessages = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const token = res.locals.userToken
-      const result = await messageService.getMessages(req.params.chatId, token)
+      const result = await this.service.getMessages(this.channel, req.params.chatId)
 
       const message = 'Success get all messages'
       logger.info(message)
@@ -56,4 +48,4 @@ class MessageController {
   }
 }
 
-export const { sendMessage, getLastestMessageById, getMessages } = new MessageController()
+export default MessageController
