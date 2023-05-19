@@ -1,12 +1,12 @@
 /* eslint-disable array-callback-return */
 /* eslint-disable no-unreachable */
-import { InternalServerError, logger } from '../utils'
+import { InternalServerError, RPCRequest, logger } from '../utils'
 import { AddOrRemoveGroupChatDTO, RenameGroupChatDTO, UserDTO } from '../dto'
 import { Chat } from '../models'
-import axios from 'axios'
+import { MESSAGE_RPC, USER_RPC } from '../../config'
 
 class ChatRepository {
-  getChats = async (user: UserDTO, token: string) => {
+  getChats = async (channel: any, user: UserDTO) => {
     try {
       const chat: any = await Chat.find({ users: { $elemMatch: { $eq: user._id } } })
         // .populate('users', '-password')
@@ -16,14 +16,10 @@ class ChatRepository {
 
       if (chat.length > 0) {
         for (const c of chat) {
-          const { data } = await axios.get(
-            `http://localhost:5000/api/v1/users/${JSON.stringify(c.users)}/detail-with-userlogin`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`
-              }
-            }
-          )
+          const data: any = await RPCRequest(channel, USER_RPC, {
+            event: 'DETAIL_USERS',
+            data: { users: c.users }
+          })
 
           c.users = []
           const adminDetail = [...c.groupAdmin]
@@ -37,18 +33,12 @@ class ChatRepository {
           })
 
           if (c.latestMessage) {
-            const latestMessage = await axios.get(
-              `http://localhost:5002/api/v1/message/${c.latestMessage._id}/latest-message`,
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`
-                }
-              }
-            )
+            const latestMessage: any = await RPCRequest(channel, MESSAGE_RPC, {
+              event: 'DETAIL_LATEST_MESSAGE',
+              data: { id: c.latestMessage._id }
+            })
 
-            console.log(latestMessage)
-
-            c.latestMessage = latestMessage.data.data
+            c.latestMessage = latestMessage
           }
         }
       }
@@ -69,7 +59,7 @@ class ChatRepository {
     }
   }
 
-  accessChat = async (user: UserDTO, userId: string, token: string) => {
+  accessChat = async (channel: any, user: UserDTO, userId: string) => {
     try {
       const chat: any = await Chat.find({
         isGroupChat: false,
@@ -77,14 +67,10 @@ class ChatRepository {
       }).populate('latestMessage', 'name pic email')
 
       if (chat.length > 0) {
-        const { data } = await axios.get(
-          `http://localhost:5000/api/v1/users/${JSON.stringify(chat[0].users)}/detail-with-userlogin`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          }
-        )
+        const data: any = await RPCRequest(channel, USER_RPC, {
+          event: 'DETAIL_USERS',
+          data: { users: chat[0].users }
+        })
 
         chat[0].users = []
         data.map((dt: any) => {
@@ -92,16 +78,12 @@ class ChatRepository {
         })
 
         if (chat[0].latestMessage) {
-          const latestMessage = await axios.get(
-            `http://localhost:5002/api/v1/message/${chat[0].latestMessage._id}/latest-message`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`
-              }
-            }
-          )
+          const latestMessage: any = await RPCRequest(channel, MESSAGE_RPC, {
+            event: 'DETAIL_LATEST_MESSAGE',
+            data: { id: chat[0].latestMessage._id }
+          })
 
-          chat[0].latestMessage = latestMessage.data.data
+          chat[0].latestMessage = latestMessage
         }
 
         return chat[0]
@@ -117,14 +99,10 @@ class ChatRepository {
       const createdChat = await Chat.create(chatData)
       const fullChat: any = await Chat.findOne({ _id: createdChat._id })
 
-      const { data } = await axios.get(
-        `http://localhost:5000/api/v1/users/${JSON.stringify(chatData.users)}/detail-with-userlogin`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      )
+      const data: any = await RPCRequest(channel, USER_RPC, {
+        event: 'DETAIL_USERS',
+        data: { users: chatData.users }
+      })
 
       fullChat.users = []
       data.map((dt: any) => {
@@ -171,7 +149,7 @@ class ChatRepository {
     }
   }
 
-  renameGroupChat = async (body: RenameGroupChatDTO, token: string) => {
+  renameGroupChat = async (channel: any, body: RenameGroupChatDTO) => {
     try {
       const chat: any = await Chat.findByIdAndUpdate(
         body.chatId,
@@ -183,18 +161,15 @@ class ChatRepository {
       // .populate('users', '-password')
       // .populate('groupAdmin', '-password')
 
-      const { data } = await axios.get(
-        `http://localhost:5000/api/v1/users/${JSON.stringify(chat!.users)}/detail-with-userlogin`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      )
+      const data: any = await RPCRequest(channel, USER_RPC, {
+        event: 'DETAIL_USERS',
+        data: { users: chat!.users }
+      })
 
       chat.users = []
       const adminDetail = [...chat.groupAdmin]
       chat.groupAdmin = []
+
       data.map((dt: any) => {
         if (adminDetail.includes(dt.id)) {
           chat.groupAdmin.push(dt)
@@ -210,7 +185,7 @@ class ChatRepository {
     }
   }
 
-  addToGroupChat = async (body: AddOrRemoveGroupChatDTO, token: string) => {
+  addToGroupChat = async (channel: any, body: AddOrRemoveGroupChatDTO) => {
     try {
       const chat: any = await Chat.findByIdAndUpdate(
         body.chatId,
@@ -222,14 +197,10 @@ class ChatRepository {
       // .populate('users', '-password')
       // .populate('groupAdmin', '-password')
 
-      const { data } = await axios.get(
-        `http://localhost:5000/api/v1/users/${JSON.stringify(chat!.users)}/detail-with-userlogin`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      )
+      const data: any = await RPCRequest(channel, USER_RPC, {
+        event: 'DETAIL_USERS',
+        data: { users: chat!.users }
+      })
 
       chat.users = []
       const adminDetail = [...chat.groupAdmin]
@@ -249,7 +220,7 @@ class ChatRepository {
     }
   }
 
-  removeFromGroupChat = async (body: AddOrRemoveGroupChatDTO, token: string) => {
+  removeFromGroupChat = async (channel: any, body: AddOrRemoveGroupChatDTO) => {
     try {
       const chat: any = await Chat.findByIdAndUpdate(
         body.chatId,
@@ -261,14 +232,10 @@ class ChatRepository {
       // .populate('users', '-password')
       // .populate('groupAdmin', '-password')
 
-      const { data } = await axios.get(
-        `http://localhost:5000/api/v1/users/${JSON.stringify(chat!.users)}/detail-with-userlogin`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      )
+      const data: any = await RPCRequest(channel, USER_RPC, {
+        event: 'DETAIL_USERS',
+        data: { users: chat!.users }
+      })
 
       chat.users = []
       const adminDetail = [...chat.groupAdmin]

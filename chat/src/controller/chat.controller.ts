@@ -1,15 +1,23 @@
 import { NextFunction, Request, Response } from 'express'
 
-import { UnprocessableEntityError, logger, validate } from '../utils'
+import { RPCObserver, UnprocessableEntityError, logger, subscribeMessage, validate } from '../utils'
 import { AccessChatSchema, AddOrRemoveGroupChatSchema, CreateGroupChatSchema, RenameGroupChatSchema } from '../dto'
-import { chatService } from '../services'
+import ChatService from '../services/chat.service'
 
 class ChatController {
+  channel
+  service = new ChatService()
+
+  constructor(channel: any) {
+    this.channel = channel
+    subscribeMessage(channel, this.service)
+    RPCObserver(channel, this.service)
+  }
+
   getChats = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const token = res.locals.userToken
       const user = res.locals.user
-      const result = await chatService.getChats(user, token)
+      const result = await this.service.getChats(this.channel, user)
 
       const message = 'Success get chat data'
       logger.info(message)
@@ -23,7 +31,7 @@ class ChatController {
     try {
       const id = req.params.id
 
-      const result = await chatService.getChatById(id)
+      const result = await this.service.getChatById(id)
 
       const message = 'Success get chat data by id'
       logger.info(message)
@@ -35,7 +43,6 @@ class ChatController {
 
   accessChat = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const token = res.locals.userToken
       const user = res.locals.user
       const body = req.body
 
@@ -45,7 +52,7 @@ class ChatController {
         throw new UnprocessableEntityError('can not chat access to own user')
       }
 
-      const result = await chatService.accessChat(user, body.userId, token)
+      const result = await this.service.accessChat(this.channel, user, body.userId)
 
       const message = 'Success create new chat'
       logger.info(message)
@@ -69,7 +76,7 @@ class ChatController {
       const users = JSON.parse(body.users)
       users.push(user._id)
 
-      const result = await chatService.createGroupChat(user._id, users, body.name)
+      const result = await this.service.createGroupChat(user._id, users, body.name)
 
       const message = 'Success create group chat'
       logger.info(message)
@@ -79,31 +86,13 @@ class ChatController {
     }
   }
 
-  updateLastestMessage = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const id = req.params.id
-      const body = req.body
-
-      // validate(body, CreateGroupChatSchema)
-
-      const result = await chatService.updateLastestMessage(id, body.messageId)
-
-      const message = 'Success update last message in chat'
-      logger.info(message)
-      return res.status(200).json({ message, data: result })
-    } catch (err: any) {
-      next(err)
-    }
-  }
-
   renameGroup = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const token = res.locals.userToken
       const body = req.body
 
       validate(body, RenameGroupChatSchema)
 
-      const result = await chatService.renameGroupChat(body, token)
+      const result = await this.service.renameGroupChat(this.channel, body)
 
       const message = 'Success rename group chat'
       logger.info(message)
@@ -115,12 +104,11 @@ class ChatController {
 
   addToGroup = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const token = res.locals.userToken
       const body = req.body
 
       validate(body, AddOrRemoveGroupChatSchema)
 
-      const result = await chatService.addToGroupChat(body, token)
+      const result = await this.service.addToGroupChat(this.channel, body)
 
       const message = 'Success add user to group chat'
       logger.info(message)
@@ -132,12 +120,11 @@ class ChatController {
 
   removeFromGroup = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const token = res.locals.userToken
       const body = req.body
 
       validate(body, AddOrRemoveGroupChatSchema)
 
-      const result = await chatService.removeFromGroupChat(body, token)
+      const result = await this.service.removeFromGroupChat(this.channel, body)
 
       const message = 'Success remove user from group chat'
       logger.info(message)
@@ -148,13 +135,4 @@ class ChatController {
   }
 }
 
-export const {
-  getChats,
-  getChatById,
-  accessChat,
-  createGroupChat,
-  updateLastestMessage,
-  renameGroup,
-  addToGroup,
-  removeFromGroup
-} = new ChatController()
+export default ChatController

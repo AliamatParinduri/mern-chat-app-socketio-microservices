@@ -14,9 +14,9 @@ import {
   createChatGroup
 } from './mongodb.memory'
 
-beforeAll(connect)
-beforeEach(cleanData)
-afterAll(disconnect)
+// beforeAll(connect)
+// beforeEach(cleanData)
+// afterAll(disconnect)
 
 const user3Payload = {
   name: 'Bambang',
