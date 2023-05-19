@@ -7,3 +7,9 @@ export const DefaultPicture = process.env.DefaultPicture ?? images
 export const DBUri = process.env.DBUri ?? 'your uri'
 export const privateKey = process.env.privateKey ?? 'your key'
 export const publicKey = process.env.publicKey ?? 'your key'
+
+export const MSBROKER_URI = process.env.MSBROKER_URI ?? 'your uri'
+export const EXCHANGE_NAME = 'CHAT-APP'
+export const CHAT_QUEUE_NAME = 'CHAT_QUEUE'
+export const USER_RPC = 'USER_RPC'
+export const CHAT_BINDING_KEY = 'CHAT_SERVICE'
