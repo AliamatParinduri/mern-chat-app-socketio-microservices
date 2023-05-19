@@ -1,11 +1,15 @@
-import { detailsUsers, getUsers } from '../controller'
+import UserController from '../controller/user.controller'
 import { requireLogin } from '../middlewares'
 import { BaseRoutes } from './base.route'
+import { createChannel } from '../utils'
 
 class UserRoutes extends BaseRoutes {
-  routes() {
-    this.router.get('/', requireLogin, getUsers)
-    this.router.get('/:users/detail-with-userlogin', requireLogin, detailsUsers)
+  async routes() {
+    const channel = await createChannel()
+
+    const c = new UserController(channel)
+
+    this.router.get('/', requireLogin, c.getUsers)
   }
 }
 

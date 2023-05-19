@@ -6,6 +6,18 @@ import { UserDTO } from '../dto'
 import { NotFoundError } from '../utils'
 
 class UserService {
+  async serveRPCRequest(payload: any) {
+    const { event, data } = payload
+
+    switch (event) {
+      case 'DETAIL_USERS':
+        return this.detailsUsers(data.users)
+
+      default:
+        break
+    }
+  }
+
   getUsers = async (req: Request, user: UserDTO) => {
     const keyword = req.query.search
       ? {
@@ -33,4 +45,4 @@ class UserService {
   }
 }
 
-export const userService = new UserService()
+export default UserService
