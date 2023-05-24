@@ -6,7 +6,7 @@ class AuthService {
   register = async (payload: RegisterDTO) => {
     const userExists = await userRepository.findOne({ email: payload.email })
 
-    if (userExists) {
+    if (userExists.hits.hits.length > 0) {
       throw new UnprocessableEntityError('User already exists')
     }
 
@@ -15,17 +15,19 @@ class AuthService {
   }
 
   login = async (payload: LoginDTO) => {
-    const userExists = await userRepository.findOne({ email: payload.email })
-    if (!userExists) {
+    const userExists: any = await userRepository.findOne({ email: payload.email })
+    const user = userExists.hits.hits
+
+    if (user.length < 1) {
       throw new UnprocessableEntityError('incorrect email or password')
     }
 
-    const compared = await comparePassword(payload.password, userExists.password)
+    const compared = await comparePassword(payload.password, user[0]._source.password)
     if (!compared) {
       throw new UnprocessableEntityError('incorrect email or password')
     }
 
-    return userExists
+    return user[0]._source
   }
 }
 

@@ -38,7 +38,7 @@ class UserService {
 
     for (const user of users) {
       const userDetail = await userRepository.findById(user)
-      data.push(userDetail.dataValues)
+      data.push(userDetail.hits.hits[0]._source)
     }
 
     return data
