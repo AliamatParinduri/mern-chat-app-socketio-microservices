@@ -1,3 +1,4 @@
+export * from './elasticsearch'
 export * from './errors'
 export * from './hashing'
 export * from './logger'
