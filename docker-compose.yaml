@@ -9,28 +9,134 @@ services:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: mongo
     volumes:
-      - chat-app-volume:/data/db
+      - chat-app-volume-mongo:/data/db
     networks:
       - chat-app-network
     restart: always
 
-  chat-app-backend:
+  chat-app-postgres:
+    image: postgres:12-alpine
+    ports:
+      - '5432:5432'
+    container_name: chat-app-postgres
+    environment:
+      POSTGRES_USERNAME: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: chat-app-user
+      APP_DB_USER: docker
+      APP_DB_PASS: docker
+      APP_DB_NAME: chat-app-user
+    volumes:
+      - chat-app-volume-postgres:/var/lib/postgresql/data
+    networks:
+      - chat-app-network
+    restart: always
+
+  chat-app-pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=root
+    depends_on:
+      - chat-app-postgres
+    ports:
+      - '8080:80'
+
+  chat-app-elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.7.1
+    container_name: chat-app-elasticsearch
+    environment:
+      - cluster.name=chat-app-cluster
+      - node.name=node1
+      - discovery.type=single-node
+      # - bootstrap.memory_lock=true
+      - 'ES_JAVA_OPTS=-Xms512m -Xmx512m'
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - 9200:9200
+    volumes:
+      - chat-app-volume-esdata:/usr/share/elasticsearch/data
+    restart: always
+    networks:
+      - chat-app-network
+
+  chat-app-rabbitmq:
+    image: rabbitmq:3.11-management
+    container_name: chat-app-rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+    volumes:
+      - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
+      - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
+    networks:
+      - chat-app-network
+    restart: unless-stopped
+
+  chat-app-user:
     build:
       dockerfile: Dockerfile
-      context: ./backend
-    container_name: chat-app-backend
+      context: ./user
+    container_name: chat-app-user
     ports:
       - '5000:5000'
     volumes:
       - .:/app
-      - /app/backend/node_modules
+      - /app/user/node_modules
     depends_on:
-      - chat-app-mongodb
+      - chat-app-pgadmin
+      - chat-app-elasticsearch
+      - chat-app-rabbitmq
     networks:
       - chat-app-network
     restart: always
     env_file:
-      - ./backend/.env
+      - ./user/.env.example
+
+  chat-app-chat:
+    build:
+      dockerfile: Dockerfile
+      context: ./chat
+    container_name: chat-app-chat
+    ports:
+      - '5001:5001'
+    volumes:
+      - .:/app
+      - /app/chat/node_modules
+    depends_on:
+      - chat-app-mongodb
+      - chat-app-elasticsearch
+      - chat-app-rabbitmq
+    networks:
+      - chat-app-network
+    restart: always
+    env_file:
+      - ./chat/.env.example
+
+  chat-app-message:
+    build:
+      dockerfile: Dockerfile
+      context: ./message
+    container_name: chat-app-message
+    ports:
+      - '5002:5002'
+    volumes:
+      - .:/app
+      - /app/message/node_modules
+    depends_on:
+      - chat-app-mongodb
+      - chat-app-elasticsearch
+      - chat-app-rabbitmq
+    networks:
+      - chat-app-network
+    restart: always
+    env_file:
+      - ./message/.env.example
 
   chat-app-frontend:
     build:
@@ -43,13 +149,18 @@ services:
       - .:/app
       - /app/frontend/node_modules
     depends_on:
+      - chat-app-pgadmin
       - chat-app-mongodb
+      - chat-app-elasticsearch
+      - chat-app-rabbitmq
     networks:
       - chat-app-network
     restart: always
 
 volumes:
-  chat-app-volume:
+  chat-app-volume-postgres:
+  chat-app-volume-mongo:
+  chat-app-volume-esdata:
 
 networks:
   chat-app-network:

@@ -1,6 +1,6 @@
 FROM node:lts-alpine3.17
 
-WORKDIR /app/backend
+WORKDIR /app/message
 
 COPY package*.json .
 
@@ -8,6 +8,6 @@ RUN npm i
 
 COPY . .
 
-EXPOSE 5000
+EXPOSE 5002
 
 CMD [ "npm", "start" ]

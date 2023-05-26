@@ -14,7 +14,8 @@ routes(app)
 app.get('/app-version', (req: Request, res: Response, next: NextFunction) => {
   return res.json({
     author: 'Aliamat Parinduri',
-    version: '0.1.0'
+    version: '0.1.0',
+    service: 'User'
   })
 })
 
