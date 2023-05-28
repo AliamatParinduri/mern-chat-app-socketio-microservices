@@ -66,7 +66,7 @@ services:
       - chat-app-network
 
   chat-app-rabbitmq:
-    image: rabbitmq:3.11-management
+    image: rabbitmq:3-management-alpine
     container_name: chat-app-rabbitmq
     ports:
       - 5672:5672
@@ -156,6 +156,21 @@ services:
     networks:
       - chat-app-network
     restart: always
+
+  chat-app-nginx:
+    build:
+      dockerfile: Dockerfile
+      context: ./nginx
+    depends_on:
+      - chat-app-user
+      - chat-app-chat
+      - chat-app-message
+      - chat-app-frontend
+    networks:
+      - chat-app-network
+    restart: always
+    ports:
+      - 80:80
 
 volumes:
   chat-app-volume-postgres:
