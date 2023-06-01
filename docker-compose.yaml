@@ -32,16 +32,6 @@ services:
       - chat-app-network
     restart: always
 
-  chat-app-pgadmin:
-    image: dpage/pgadmin4
-    environment:
-      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
-      - PGADMIN_DEFAULT_PASSWORD=root
-    depends_on:
-      - chat-app-postgres
-    ports:
-      - '8080:80'
-
   chat-app-elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.7.1
     container_name: chat-app-elasticsearch
@@ -78,18 +68,18 @@ services:
       - chat-app-network
     restart: unless-stopped
 
-  chat-app-user:
+  chat-app-user1:
     build:
       dockerfile: Dockerfile
       context: ./user
-    container_name: chat-app-user
-    ports:
-      - '5000:5000'
+    container_name: chat-app-user1
+    environment:
+      - PORT=5001
     volumes:
       - .:/app
       - /app/user/node_modules
     depends_on:
-      - chat-app-pgadmin
+      - chat-app-postgres
       - chat-app-elasticsearch
       - chat-app-rabbitmq
     networks:
@@ -98,13 +88,53 @@ services:
     env_file:
       - ./user/.env.example
 
-  chat-app-chat:
+  chat-app-user2:
+    build:
+      dockerfile: Dockerfile
+      context: ./user
+    container_name: chat-app-user2
+    environment:
+      - PORT=5002
+    volumes:
+      - .:/app
+      - /app/user/node_modules
+    depends_on:
+      - chat-app-postgres
+      - chat-app-elasticsearch
+      - chat-app-rabbitmq
+    networks:
+      - chat-app-network
+    restart: always
+    env_file:
+      - ./user/.env.example
+
+  chat-app-user3:
+    build:
+      dockerfile: Dockerfile
+      context: ./user
+    container_name: chat-app-user3
+    environment:
+      - PORT=5003
+    volumes:
+      - .:/app
+      - /app/user/node_modules
+    depends_on:
+      - chat-app-postgres
+      - chat-app-elasticsearch
+      - chat-app-rabbitmq
+    networks:
+      - chat-app-network
+    restart: always
+    env_file:
+      - ./user/.env.example
+
+  chat-app-chat1:
     build:
       dockerfile: Dockerfile
       context: ./chat
-    container_name: chat-app-chat
-    ports:
-      - '5001:5001'
+    container_name: chat-app-chat1
+    environment:
+      - PORT=5101
     volumes:
       - .:/app
       - /app/chat/node_modules
@@ -118,13 +148,93 @@ services:
     env_file:
       - ./chat/.env.example
 
-  chat-app-message:
+  chat-app-chat2:
+    build:
+      dockerfile: Dockerfile
+      context: ./chat
+    container_name: chat-app-chat2
+    environment:
+      - PORT=5102
+    volumes:
+      - .:/app
+      - /app/chat/node_modules
+    depends_on:
+      - chat-app-mongodb
+      - chat-app-elasticsearch
+      - chat-app-rabbitmq
+    networks:
+      - chat-app-network
+    restart: always
+    env_file:
+      - ./chat/.env.example
+
+  chat-app-chat3:
+    build:
+      dockerfile: Dockerfile
+      context: ./chat
+    container_name: chat-app-chat3
+    environment:
+      - PORT=5103
+    volumes:
+      - .:/app
+      - /app/chat/node_modules
+    depends_on:
+      - chat-app-mongodb
+      - chat-app-elasticsearch
+      - chat-app-rabbitmq
+    networks:
+      - chat-app-network
+    restart: always
+    env_file:
+      - ./chat/.env.example
+
+  chat-app-message1:
     build:
       dockerfile: Dockerfile
       context: ./message
-    container_name: chat-app-message
-    ports:
-      - '5002:5002'
+    container_name: chat-app-message1
+    environment:
+      - PORT=5201
+    volumes:
+      - .:/app
+      - /app/message/node_modules
+    depends_on:
+      - chat-app-mongodb
+      - chat-app-elasticsearch
+      - chat-app-rabbitmq
+    networks:
+      - chat-app-network
+    restart: always
+    env_file:
+      - ./message/.env.example
+
+  chat-app-message2:
+    build:
+      dockerfile: Dockerfile
+      context: ./message
+    container_name: chat-app-message2
+    environment:
+      - PORT=5202
+    volumes:
+      - .:/app
+      - /app/message/node_modules
+    depends_on:
+      - chat-app-mongodb
+      - chat-app-elasticsearch
+      - chat-app-rabbitmq
+    networks:
+      - chat-app-network
+    restart: always
+    env_file:
+      - ./message/.env.example
+
+  chat-app-message3:
+    build:
+      dockerfile: Dockerfile
+      context: ./message
+    container_name: chat-app-message3
+    environment:
+      - PORT=5203
     volumes:
       - .:/app
       - /app/message/node_modules
@@ -149,7 +259,7 @@ services:
       - .:/app
       - /app/frontend/node_modules
     depends_on:
-      - chat-app-pgadmin
+      - chat-app-postgres
       - chat-app-mongodb
       - chat-app-elasticsearch
       - chat-app-rabbitmq
@@ -162,9 +272,15 @@ services:
       dockerfile: Dockerfile
       context: ./nginx
     depends_on:
-      - chat-app-user
-      - chat-app-chat
-      - chat-app-message
+      - chat-app-user1
+      - chat-app-user2
+      - chat-app-user3
+      - chat-app-chat1
+      - chat-app-chat2
+      - chat-app-chat3
+      - chat-app-message1
+      - chat-app-message2
+      - chat-app-message3
       - chat-app-frontend
     networks:
       - chat-app-network

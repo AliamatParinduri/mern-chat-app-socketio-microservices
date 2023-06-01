@@ -1,8 +1,9 @@
 import express, { Application, NextFunction, Request, Response } from 'express'
 import cors from 'cors'
 
-import { BaseError, NotFoundError } from './utils'
 import routes from './routes'
+import { PORT as port } from '../config'
+import { BaseError, NotFoundError } from './utils'
 
 const app: Application = express()
 
@@ -11,11 +12,19 @@ app.use(express.json())
 
 routes(app)
 
+app.get('/', (req: Request, res: Response, next: NextFunction) => {
+  return res.json({
+    service: 'Message',
+    port
+  })
+})
+
 app.get('/app-version', (req: Request, res: Response, next: NextFunction) => {
   return res.json({
     author: 'Aliamat Parinduri',
     version: '0.1.0',
-    service: 'Message'
+    service: 'Message',
+    port
   })
 })
 
